@@ -1,6 +1,10 @@
 #include "tilemap.hpp"
 
 Tilemap::Tilemap() {}
+Tilemap::Tilemap(int width, int height)
+{
+    tiles = matrix<Tile> (height, std::vector<Tile>(width));
+}
 Tilemap::~Tilemap() {}
 
 int Tilemap::getWidth() const
@@ -41,7 +45,7 @@ void Tilemap::getView(matrix<Tile>& v, int x, int y, int radius) const
         {
             int posx = j + left;
             int posy = i + top;
-            if (posy >= 0 and posy < tiles.size() and posx >= 0 and posx < tiles[0].size())
+            if (posy >= 0 and posy < getHeight() and posx >= 0 and posx < getWidth())
             {
                 v[i][j] = tiles[posy][posx];
             }

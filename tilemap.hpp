@@ -11,9 +11,8 @@ private:
 
 public:
     Tilemap();
+    Tilemap(int width, int height);
     ~Tilemap();
-
-    void event(const sf::Event& event);
 
     int getWidth() const;
     int getHeight() const;
