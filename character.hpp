@@ -6,13 +6,14 @@
 class Character
 {
 private:
-    sf::Vector2i pos = sf::Vector2i(0, 0);
+    sf::Vector2i pos;
 
     int maxhp, hp;
     int attack, defense;
 
 public:
     Character();
+    Character(const sf::Vector2i& p);
     Character(const Character& c);
     Character(int hp, int atk, int def);
     ~Character();

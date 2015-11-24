@@ -1,18 +1,42 @@
 CC = g++
-FLAGS = -std=c++11 -Wall
+CFLAGS = -std=c++11 -Wall -O2
+LFLAGS = 
 SFML = -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system
 INCLUDES = .
 
-TARGETS = game testTilemap
+TARGETS = game testTilemap dungeonlevel character characterfactory behavior command main
 all: $(TARGETS)
 
-game: main.cpp
-	$(CC) $(FLAGS) $(SFML) $^ -o $@
+game: main dungeonlevel character characterfactory behavior command tilemap dungeongenerator
+	$(CC) main.o dungeonlevel.o character.o characterfactory.o behavior.o command.o tilemap.o tile.o dungeongenerator.o $(SFML) -o $@
 
 testTilemap: tests/tilemap.test.cpp tilemap.cpp tile.cpp
-	$(CC) $(FLAGS) -c tile.cpp
-	$(CC) $(FLAGS) -c tilemap.cpp
-	$(CC) $(FLAGS) $(SFML) $^ -o $@ -I$(INCLUDES)
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
+	$(CC) tilemap.test.o tilemap.o tile.o $(SFML) -o $@
+
+main: main.cpp
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
+
+dungeonlevel: dungeonlevel.cpp
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
+
+character: character.cpp
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
+
+characterfactory: characterfactory.cpp
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
+
+behavior: behavior.cpp
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
+
+command: command.cpp
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
+
+tilemap: tilemap.cpp tile.cpp
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
+
+dungeongenerator: dungeongenerator.cpp
+	$(CC) $(CFLAGS) -c $^ -I$(INCLUDES)
 
 clean:
 	rm -rf $(TARGETS) *.o

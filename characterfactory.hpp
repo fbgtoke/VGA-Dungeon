@@ -19,6 +19,7 @@ public:
     ~CharacterFactory();
 
     int newCharacter();
+    int newCharacter(const sf::Vector2i& pos);
     int newCharacter(const Character& c);
     void eraseCharacter(int i);
 

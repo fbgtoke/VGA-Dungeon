@@ -1,10 +1,75 @@
 #include "dungeonlevel.hpp"
 
-DungeonLevel::DungeonLevel() {}
+DungeonLevel::DungeonLevel()
+{
+    DungeonGenerator g(tilemap);
+    g.generate();
+}
 DungeonLevel::~DungeonLevel() {}
 
-void DungeonLevel::validateCommand(Command& c, const Character* ch) {}
-void DungeonLevel::executeCommand(Command& c, const Character* ch) {}
+void DungeonLevel::validateCommand(Command& c, const Character* ch)
+{
+    CommandType type = c.getType();
+    CommandDirection dir = c.getDirection();
+    sf::Vector2i pos = ch->getPosition();
+    switch (type)
+    {
+    case MOVE:
+        switch(dir)
+        {
+        case LEFT:
+            if (pos.x <= 0 or tilemap.checkPermission(pos.x-1, pos.y) != WALK)
+                c.setType(IDLE);
+            break;
+        case RIGHT:
+            if (pos.x >= tilemap.getWidth()-1 or tilemap.checkPermission(pos.x+1, pos.y) != WALK)
+                c.setType(IDLE);
+            break;
+        case UP:
+            if (pos.y <= 0 or tilemap.checkPermission(pos.x, pos.y-1) != WALK)
+                c.setType(IDLE);
+            break;
+        case DOWN:
+            if (pos.y >= tilemap.getHeight()-1 or tilemap.checkPermission(pos.x, pos.y+1) != WALK)
+                c.setType(IDLE);
+            break;
+        default:
+            break;
+        }
+    default:
+        break;
+    }
+}
+void DungeonLevel::executeCommand(const Command& c, Character* ch)
+{
+    CommandType type = c.getType();
+    CommandDirection dir = c.getDirection();
+    switch (type)
+    {
+    case IDLE:
+        break;
+    case MOVE:
+        switch (dir)
+        {
+        case UP:
+            ch->move(0, -1);
+            break;
+        case DOWN:
+            ch->move(0, 1);
+            break;
+        case LEFT:
+            ch->move(-1, 0);
+            break;
+        case RIGHT:
+            ch->move(1, 0);
+            break;
+        default:
+            break;
+        }
+    default:
+        break;
+    }
+}
 
 void DungeonLevel::turn()
 {
@@ -36,6 +101,24 @@ void DungeonLevel::getAllTiles(matrix<Tile>& t) const { tilemap.getAllTiles(t); 
 int DungeonLevel::getNumCharacters() const { return IDs.size(); }
 bool DungeonLevel::existsCharacter(int i) { return factory.existsCharacter(i); }
 void DungeonLevel::getCharacter(int i, Character& c)
-{   
-    c = Character(*factory.getCharacter(i));
+{
+    int n = IDs.size();
+    if (i >= n) return;
+    int index = IDs[i];
+    c = Character(*factory.getCharacter(index));
+}
+
+void DungeonLevel::newCharacter(BehaviorID b)
+{
+    int id = factory.newCharacter();
+    IDs.push_back(id);
+    Behavior* behavior = BehaviorFactory::getBehavior(b, id, factory);
+    turn_queue.push(behavior);
+}
+void DungeonLevel::newCharacter(BehaviorID b, const sf::Vector2i& pos)
+{
+    int id = factory.newCharacter(pos);
+    IDs.push_back(id);
+    Behavior* behavior = BehaviorFactory::getBehavior(b, id, factory);
+    turn_queue.push(behavior);
 }

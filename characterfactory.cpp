@@ -11,14 +11,26 @@ int CharacterFactory::newCharacter()
     int index = generateIndex(c);
     characters[index] = c;
     ++ncharacters;
-}
 
+    return index;
+}
+int CharacterFactory::newCharacter(const sf::Vector2i& pos)
+{
+    Character* c = new Character(pos);
+    int index = generateIndex(c);
+    characters[index] = c;
+    ++ncharacters;
+
+    return index;
+}
 int CharacterFactory::newCharacter(const Character& c)
 {
     Character* newchar = new Character(c);
     int index = generateIndex(newchar);
     characters[index] = newchar;
     ++ncharacters;
+
+    return index;
 }
 
 void CharacterFactory::eraseCharacter(int i)

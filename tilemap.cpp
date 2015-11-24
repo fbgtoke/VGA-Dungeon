@@ -31,6 +31,12 @@ void Tilemap::getTile(int x, int y, Tile& t) const
 }
 void Tilemap::getAllTiles(matrix<Tile>& t) const { t = tiles; }
 
+TilePermission Tilemap::checkPermission(int x, int y) const
+{
+    if (y < 0 or y >= getHeight() or x < 0 or x >= getWidth()) return NONE;
+    else return tiles[y][x].getPermission();
+}
+
 void Tilemap::getView(matrix<Tile>& v, int x, int y, int radius) const
 {
     int left = x - radius;

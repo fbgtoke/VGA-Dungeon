@@ -22,6 +22,8 @@ public:
     void getTile(int x, int y, Tile& t) const;
     void getAllTiles(matrix<Tile>& t) const;
 
+    TilePermission checkPermission(int x, int y) const;
+
     void getView(matrix<Tile>& v, int x, int y, int radius) const;
 
     void printMap() const;

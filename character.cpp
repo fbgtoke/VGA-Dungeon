@@ -1,14 +1,19 @@
 #include "character.hpp"
 
-Character::Character() { maxhp = hp = defense = attack = 0; }
+Character::Character() { maxhp = hp = defense = attack = 0; pos = sf::Vector2i(0, 0); }
+Character::Character(const sf::Vector2i& p) : pos(p) { maxhp = hp = defense = attack = 0; }
 Character::Character(const Character& c)
 {
     maxhp = c.maxhp;
     hp = c.hp;
     attack = c.attack;
     defense = c.defense;
+    pos = c.pos;
 }
-Character::Character(int hp, int atk, int def) : maxhp(hp), hp(hp), attack(atk), defense(def) {}
+Character::Character(int hp, int atk, int def) : maxhp(hp), hp(hp), attack(atk), defense(def)
+{
+    pos = sf::Vector2i(0, 0);
+}
 Character::~Character() {}
 
 void Character::setMaxHP(int amount)
