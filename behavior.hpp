@@ -36,7 +36,7 @@ public:
     void getNameAt(int x, int y, std::string& name) const; // relative to self
     void getNameAt(const sf::Vector2i& pos, std::string& name) const; // relative to self
 
-    virtual sf::Vector2i getCommand();
+    virtual Command getCommand();
 };
 
 #endif // BEHAVIOR_HPP

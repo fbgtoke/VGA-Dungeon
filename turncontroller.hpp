@@ -11,8 +11,8 @@ private:
     DungeonLevel& level;
     std::queue<Behavior*> turn_queue;
 
-    void validateCommand(Behavior* b, sf::Vector2i& c);
-    void executeCommand(Behavior* b, sf::Vector2i& c);
+    void validateCommand(Behavior* b, Command& c);
+    void executeCommand(Behavior* b, Command& c);
 
 public:
     TurnController(DungeonLevel& lvl);

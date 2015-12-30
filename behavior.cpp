@@ -38,11 +38,11 @@ Tile Behavior::getTile(const sf::Vector2i& p) const // relative to self
     return level.getTile(p);
 }
 
-sf::Vector2i Behavior::getCommand()
+Command Behavior::getCommand()
 {
     int d = rand()%4;
-    static sf::Vector2i dirs[] = {UP, DOWN, LEFT, RIGHT};
-    return dirs[d];
+    static Direction dirs[] = {UP, DOWN, LEFT, RIGHT};
+    return Command(MOVE, dirs[d]);
 }
 
 bool Behavior::contained(int x, int y) const

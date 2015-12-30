@@ -33,7 +33,7 @@ void TurnController::turn()
         static const int RADIUS = 3;
         level.getView(view, sf::IntRect(pos.x-RADIUS, pos.y-RADIUS, RADIUS*2+1, RADIUS*2+1));
 
-        sf::Vector2i c;
+        Command c;
         try { c = next->getCommand(); }
         catch (...) { std::cerr << "caught exception" << std::endl; }
 
@@ -44,16 +44,19 @@ void TurnController::turn()
     }
 }
 
-void TurnController::validateCommand(Behavior* b, sf::Vector2i& c)
+void TurnController::validateCommand(Behavior* b, Command& c)
 {
     int id = b->getID();
     sf::Vector2i pos = level.getPosition(id);
 
-    Tile dest = level.getTile(pos+c);
-    if (dest != WALK or not level.freePosition(pos+c)) c = sf::Vector2i(0, 0);
+    Tile dest = level.getTile(pos+c.direction);
+    if (dest != WALK or not level.freePosition(pos+c.direction)) c.type = IDLE;
 }
-void TurnController::executeCommand(Behavior* b, sf::Vector2i& c)
+void TurnController::executeCommand(Behavior* b, Command& c)
 {
-    try { level.move(b->getID(), c); }
-    catch (...) {}
+    if (c.type != IDLE)
+    {
+        try { level.move(b->getID(), c.direction); }
+        catch (...) {}
+    }
 }

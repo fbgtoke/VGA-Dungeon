@@ -22,11 +22,22 @@ const int window_height = 640;
 
 const std::string resources = "resources/";
 
-const sf::Vector2i UP(0, -1);
-const sf::Vector2i DOWN(0, 1);
-const sf::Vector2i LEFT(-1, 0);
-const sf::Vector2i RIGHT(1, 0);
+typedef sf::Vector2i Direction;
+const Direction UP(0, -1);
+const Direction DOWN(0, 1);
+const Direction LEFT(-1, 0);
+const Direction RIGHT(1, 0);
 
 enum Tile {NONE, WALL, WALK};
+
+enum CommandType {IDLE, MOVE, ATTACK};
+struct Command
+{
+    CommandType type;
+    Direction direction;
+    Command() : type(IDLE) {};
+    Command(CommandType t, Direction d) :
+        type(t), direction(d) {};
+};
 
 #endif // UTILS_HPP
