@@ -3,13 +3,25 @@
 DungeonView::DungeonView(const DungeonLevel& lvl) : level(lvl) {}
 DungeonView::~DungeonView() {}
 
+void DungeonView::update(const sf::Time& deltatime)
+{
+    sf::Vector2i center = tileSize * level.getPosition(0);
+    levelView.reset(sf::FloatRect(center.x-tileSize*7.5f, center.y-tileSize*7.5f, tileSize*16, tileSize*16));
+    levelView.setCenter(center.x + tileSize/2, center.y + tileSize/2);
+    levelView.setViewport(sf::FloatRect(0, 0, 1, 1.25f));
+    levelView.zoom(1.0f);
+
+//    GUIView.reset(sf::FloatRect(0.75f, 0.0f, 0.25f, 0.25f));
+}
+
 void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     sf::RectangleShape shape;
 
+    target.setView(levelView);
+
     // Tilemap
     shape.setSize(sf::Vector2f(16, 16));
-    shape.setOrigin(8, 8);
 
     int width = level.getMapWidth();
     int height = level.getMapHeight();
@@ -42,8 +54,7 @@ void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
     }
 
     // Characters
-    shape.setSize(sf::Vector2f(10, 10));
-    shape.setOrigin(5, 5);
+    shape.setSize(sf::Vector2f(16, 16));
     shape.setFillColor(sf::Color::Green);
 
     int n = level.getNumCharacters();
@@ -56,4 +67,13 @@ void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
         target.draw(shape);
     }
+
+
+    target.setView(GUIView);
+    shape.setSize(sf::Vector2f(1000, 1000));
+    shape.setPosition(0, 0);
+    shape.setFillColor(sf::Color::Green);
+    //target.draw(shape);
+
+    target.setView(target.getDefaultView());
 }

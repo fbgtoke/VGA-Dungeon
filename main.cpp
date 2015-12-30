@@ -15,6 +15,8 @@ int main()
     sf::RenderWindow window(sf::VideoMode(window_width, window_height), app_name);
     while (window.isOpen())
     {
+        view.update(sf::Time::Zero);
+
         window.clear(sf::Color::Black);
         window.draw(view);
         window.display();
