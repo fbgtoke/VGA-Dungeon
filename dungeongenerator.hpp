@@ -1,18 +1,19 @@
 #ifndef DUNGEONGENERATOR_HPP
 #define DUNGEONGENERATOR_HPP
 
-#include "tilemap.hpp"
 #include "utils.hpp"
+#include "dungeonlevel.hpp"
 
 class DungeonGenerator
 {
 protected:
-    Tilemap& tilemap;
+    DungeonLevel& level;
+
 public:
-    DungeonGenerator(Tilemap& map);
+    DungeonGenerator(DungeonLevel& lvl);
     virtual ~DungeonGenerator();
 
-    virtual void generate();
+    virtual void create();
 };
 
 #endif // DUNGEONGENERATOR_HPP

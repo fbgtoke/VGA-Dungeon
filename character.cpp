@@ -1,72 +1,62 @@
 #include "character.hpp"
 
-Character::Character() { maxhp = hp = defense = attack = 0; pos = sf::Vector2i(0, 0); }
-Character::Character(const sf::Vector2i& p) : pos(p) { maxhp = hp = defense = attack = 0; }
-Character::Character(const Character& c)
+Character::Character() {}
+Character::Character(const std::string& n) : name(n) {};
+Character::Character(const Character& original)
 {
-    maxhp = c.maxhp;
-    hp = c.hp;
-    attack = c.attack;
-    defense = c.defense;
-    pos = c.pos;
+    name = original.name;
+    stats = original.stats;
 }
-Character::Character(int hp, int atk, int def) : maxhp(hp), hp(hp), attack(atk), defense(def)
-{
-    pos = sf::Vector2i(0, 0);
-}
+Character::Character(const CharacterStats& s) : stats(s) {}
 Character::~Character() {}
 
+void Character::setName(const std::string& n) { name = n; }
 void Character::setMaxHP(int amount)
 {
-    if (amount >= 0)
-    {
-        maxhp = amount;
-        if (hp > maxhp) hp = maxhp;
-    }
+    assert (amount >= 0 and amount >= stats.hp);
+    stats.maxhp = amount;
 }
 void Character::setHP(int amount)
 {
-    if (amount >= 0)
-    {
-        if (amount > maxhp) hp = maxhp;
-        else hp = amount;
-    }
+    assert (amount >= 0 and amount <= stats.maxhp);
+    stats.hp = amount;
 }
-void Character::setAttack(int amount) { if (amount >= 0) attack = amount; }
-void Character::setDefense(int amount) { if (amount >= 0) defense = amount; }
-
-int Character::getMaxHP() const { return maxhp; }
-int Character::getHP() const { return hp; }
-int Character::getAttack() const { return attack; }
-int Character::getDefense() const { return defense; }
+void Character::setAttack(int amount)
+{
+    assert (amount >= 0);
+    stats.attack = amount;
+}
+void Character::setDefense(int amount)
+{
+    assert (amount >= 0);
+    stats.defense = amount;
+}
 
 void Character::raiseMaxHP(int amount)
 {
-    maxhp += amount;
-    if (maxhp < 0) maxhp = 0;
+    assert (stats.maxhp + amount >= 0 and stats.maxhp + amount >= stats.hp);
+    stats.maxhp += amount;
 }
 void Character::raiseHP(int amount)
 {
-    hp += amount;
-    if (hp < 0) hp = 0;
-    if (hp > maxhp) hp = maxhp;
+    assert (stats.hp + amount >= 0 and stats.hp + amount <= stats.maxhp);
+    stats.hp += amount;
 }
 void Character::raiseAttack(int amount)
 {
-    attack += amount;
-    if (attack < 0) attack = 0;
+    assert (stats.attack + amount >= 0);
+    stats.attack += amount;
 }
 void Character::raiseDefense(int amount)
 {
-    defense += amount;
-    if (defense < 0) defense = 0;
+    assert (stats.defense + amount >= 0);
+    stats.defense += amount;
 }
 
-void Character::fullHeal()
-{
-    hp = maxhp;
-}
+void Character::fullHeal() { stats.hp = stats.maxhp; }
 
-void Character::setPosition(int x, int y) { pos.x = x; pos.y = y; }
-void Character::move(int x, int y) { pos.x += x; pos.y += y; }
-sf::Vector2i Character::getPosition() const { return pos; }
+std::string Character::getName() const { return name; }
+int Character::getMaxHP() const { return stats.maxhp; }
+int Character::getHP() const { return stats.hp; }
+int Character::getAttack() const { return stats.attack; }
+int Character::getDefense() const { return stats.defense; }

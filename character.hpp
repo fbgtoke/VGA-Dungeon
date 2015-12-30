@@ -3,30 +3,32 @@
 
 #include "utils.hpp"
 
+struct CharacterStats
+{
+    int maxhp = 0;
+    int hp = 0;
+    int attack = 0;
+    int defense = 0;
+};
+
 class Character
 {
 private:
-    sf::Vector2i pos;
-
-    int maxhp, hp;
-    int attack, defense;
+    std::string name;
+    CharacterStats stats;
 
 public:
     Character();
-    Character(const sf::Vector2i& p);
-    Character(const Character& c);
-    Character(int hp, int atk, int def);
+    Character(const std::string& n);
+    Character(const Character& original);
+    Character(const CharacterStats& s);
     ~Character();
 
+    void setName(const std::string& n);
     void setMaxHP(int amount);
     void setHP(int amount);
     void setAttack(int amount);
     void setDefense(int amount);
-
-    int getMaxHP() const;
-    int getHP() const;
-    int getAttack() const;
-    int getDefense() const;
 
     void raiseMaxHP(int amount);
     void raiseHP(int amount);
@@ -35,9 +37,11 @@ public:
 
     void fullHeal();
 
-    void setPosition(int x, int y);
-    void move(int x, int y);
-    sf::Vector2i getPosition() const;
+    std::string getName() const;
+    int getMaxHP() const;
+    int getHP() const;
+    int getAttack() const;
+    int getDefense() const;
 };
 
 #endif // CHARACTER_HPP

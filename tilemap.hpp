@@ -2,31 +2,33 @@
 #define TILEMAP_HPP
 
 #include "utils.hpp"
-#include "tile.hpp"
 
-class Tilemap : public GameObject
+class Tilemap
 {
 private:
-    matrix<Tile> tiles;
+    matrix<Tile> map;
 
 public:
     Tilemap();
     Tilemap(int width, int height);
+    Tilemap(const Tilemap& original);
     ~Tilemap();
+    void operator=(const Tilemap& original);
 
     int getWidth() const;
     int getHeight() const;
-    sf::Vector2i getSize() const;
 
-    void setTile(int x, int y, const Tile& t);
-    void getTile(int x, int y, Tile& t) const;
-    void getAllTiles(matrix<Tile>& t) const;
+    bool outOfBounds(int x, int y) const;
+    bool outOfBounds(const sf::Vector2i& pos) const;
 
-    TilePermission checkPermission(int x, int y) const;
+    void setTile(int x, int y, Tile value);
+    void setTile(const sf::Vector2i& pos, Tile value);
 
-    void getView(matrix<Tile>& v, int x, int y, int radius) const;
+    Tile getTile(int x, int y) const;
+    Tile getTile(const sf::Vector2i& pos) const;
 
-    void printMap() const;
+    void copyMap(matrix<Tile>& view) const;
+    void copyMap(matrix<Tile>& view, const sf::IntRect& bounds) const;
 };
 
 #endif // TILEMAP_HPP

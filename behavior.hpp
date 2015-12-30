@@ -2,26 +2,41 @@
 #define BEHAVIOR_HPP
 
 #include "utils.hpp"
-#include "tile.hpp"
-#include "characterfactory.hpp"
-#include "command.hpp"
+#include "dungeonlevel.hpp"
 
 class Behavior
 {
-protected:
-    const int myid;
+private:
+    const int ID;
+    const DungeonLevel& level;
     matrix<Tile> view;
 
-    const CharacterFactory& factory;
+    bool contained(int x, int y) const;
+    bool contained(const sf::Vector2i& p) const;
 
 public:
-    Behavior(int id, const CharacterFactory& f);
-    virtual ~Behavior();
+    Behavior(int id, const DungeonLevel& lvl);
+    ~Behavior();
 
     int getID() const;
+    std::string getName() const;
+    int getMaxHP() const;
+    int getHP() const;
+    int getAttack() const;
+    int getDefense() const;
+
     matrix<Tile>& getView();
-    
-    virtual Command getCommand();
+
+    bool isEmpty(int x, int y) const; // relative to self
+    bool isEmpty(const sf::Vector2i& p) const; // relative to self
+
+    Tile getTile(int x, int y) const; // relative to self
+    Tile getTile(const sf::Vector2i& p) const; // relative to self
+
+    void getNameAt(int x, int y, std::string& name) const; // relative to self
+    void getNameAt(const sf::Vector2i& pos, std::string& name) const; // relative to self
+
+    virtual sf::Vector2i getCommand();
 };
 
 #endif // BEHAVIOR_HPP

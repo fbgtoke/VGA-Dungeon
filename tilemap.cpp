@@ -3,76 +3,63 @@
 Tilemap::Tilemap() {}
 Tilemap::Tilemap(int width, int height)
 {
-    tiles = matrix<Tile> (height, std::vector<Tile>(width));
+    map = matrix<Tile>(height, std::vector<Tile>(width));
 }
+Tilemap::Tilemap(const Tilemap& original) : map(original.map) {}
 Tilemap::~Tilemap() {}
+void Tilemap::operator=(const Tilemap& original) { map = original.map; }
 
 int Tilemap::getWidth() const
 {
-    if (tiles.size() == 0) return 0;
-    else return tiles[0].size();
+    if (getHeight() > 0) return map[0].size();
+    return 0;
 }
-int Tilemap::getHeight() const { return tiles.size(); }
-sf::Vector2i Tilemap::getSize() const { return sf::Vector2i(getHeight(), getWidth()); }
+int Tilemap::getHeight() const { return map.size(); }
 
-void Tilemap::setTile(int x, int y, const Tile& t)
+bool Tilemap::outOfBounds(int x, int y) const
 {
-    if (x >= 0 and x < getWidth() and y >= 0 and y < getHeight())
+    return x < 0 or x >= getWidth() or y < 0 or y >= getHeight();
+}
+bool Tilemap::outOfBounds(const sf::Vector2i& pos) const
+{
+    return pos.x < 0 or pos.x >= getWidth() or pos.y < 0 or pos.y >= getHeight();
+}
+
+void Tilemap::setTile(int x, int y, Tile value)
+{
+    if (outOfBounds(x, y)) throw "Position out of range";
+    map[y][x] = value;
+}
+void Tilemap::setTile(const sf::Vector2i& pos, Tile value)
+{
+    if (outOfBounds(pos)) throw "Position out of range";
+    map[pos.y][pos.x] = value;
+}
+
+Tile Tilemap::getTile(int x, int y) const
+{
+    if (outOfBounds(x, y)) throw "Position out of range";
+    return map[y][x];
+}
+Tile Tilemap::getTile(const sf::Vector2i& pos) const
+{
+    if (outOfBounds(pos)) throw "Position out of range";
+    return map[pos.y][pos.x];
+}
+
+void Tilemap::copyMap(matrix<Tile>& view) const { view = map; }
+void Tilemap::copyMap(matrix<Tile>& view, const sf::IntRect& bounds) const
+{
+    view = matrix<Tile>(bounds.height, std::vector<Tile>(bounds.width, NONE));
+
+    for (int i = 0; i < bounds.height; ++i)
     {
-        tiles[y][x] = t;
-    }
-}
-void Tilemap::getTile(int x, int y, Tile& t) const
-{
-    if (x >= 0 and x < getWidth() and y >= 0 and y < getHeight())
-    {
-        t = Tile(tiles[y][x]);
-    }
-}
-void Tilemap::getAllTiles(matrix<Tile>& t) const { t = tiles; }
-
-TilePermission Tilemap::checkPermission(int x, int y) const
-{
-    if (y < 0 or y >= getHeight() or x < 0 or x >= getWidth()) return NONE;
-    else return tiles[y][x].getPermission();
-}
-
-void Tilemap::getView(matrix<Tile>& v, int x, int y, int radius) const
-{
-    int left = x - radius;
-    int top = y - radius;
-
-    int size = 2*radius + 1;
-    v = matrix<Tile> (size, std::vector<Tile>(size));
-
-    for (int i = 0; i < size; ++i)
-    {
-        for (int j = 0; j < size; ++j)
+        for (int j = 0; j < bounds.width; ++j)
         {
-            int posx = j + left;
-            int posy = i + top;
-            if (posy >= 0 and posy < getHeight() and posx >= 0 and posx < getWidth())
-            {
-                v[i][j] = tiles[posy][posx];
-            }
+            int x = j + bounds.left;
+            int y = i + bounds.top;
+            if (not outOfBounds(x, y)) view[i][j] = map[y][x];
         }
     }
 }
 
-void Tilemap::printMap() const
-{
-    std::cout << "Printing map" << std::endl;
-    std::cout << "Width: " << getWidth() << " Height: " << getHeight() << std::endl;
-    std::cout << std::endl;
-
-    for (auto& row : tiles)
-    {
-        for (auto& t : row)
-        {
-            t.printTile();
-        }
-        std::cout << std::endl;
-    }
-
-    std::cout << "End" << std::endl << std::endl;
-}

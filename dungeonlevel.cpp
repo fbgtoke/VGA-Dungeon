@@ -1,124 +1,349 @@
 #include "dungeonlevel.hpp"
 
-DungeonLevel::DungeonLevel()
-{
-    DungeonGenerator g(tilemap);
-    g.generate();
-}
+DungeonLevel::DungeonLevel() {}
 DungeonLevel::~DungeonLevel() {}
 
-void DungeonLevel::validateCommand(Command& c, const Character* ch)
+void DungeonLevel::create() {}
+
+void DungeonLevel::newCharacter(const std::string& name)
 {
-    CommandType type = c.getType();
-    CommandDirection dir = c.getDirection();
-    sf::Vector2i pos = ch->getPosition();
-    switch (type)
+    int pos = find(name);
+    if (pos != -1) throw "Character already exists";
+
+    Tile tile = tilemap.getTile(0, 0);
+    if (tile != WALK) throw "Could not create character at default position";
+    if (not freePosition(0, 0)) throw "Could not create character at default position";
+
+    int newID = getNumCharacters();
+    characters.push_back(Character(name));
+    actors[newID] = sf::Vector2i(0, 0);
+}
+void DungeonLevel::newCharacter(const std::string& name, int x, int y)
+{
+    int pos = find(name);
+    if (pos != -1) throw "Character already exists";
+
+    if (outOfBounds(x, y)) throw "Spawn position out of bounds";
+    Tile tile = tilemap.getTile(x, y);
+    if (tile != WALK) throw "Spawn position invalid";
+    if (not freePosition(0, 0)) throw "Spawn position already ocupied";
+
+    int newID = getNumCharacters();
+    characters.push_back(Character(name));
+    actors[newID] = sf::Vector2i(x, y);
+}
+void DungeonLevel::newCharacter(const std::string& name, const sf::Vector2i& pos)
+{
+    int id = find(name);
+    if (id != -1) throw "Character already exists";
+
+    if (outOfBounds(pos)) throw "Spawn position out of bounds";
+    Tile tile = tilemap.getTile(pos);
+    if (tile != WALK) throw "Spawn position invalid";
+    if (not freePosition(pos)) throw "Spawn position already ocupied";
+
+    int newID = getNumCharacters();
+    characters.push_back(Character(name));
+    actors[newID] = pos;
+}
+
+int DungeonLevel::getID(const std::string& name) const
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    return pos;
+}
+int DungeonLevel::getNumCharacters() const { return characters.size(); }
+
+std::string DungeonLevel::getName(int id) const
+{
+    if (id >= getNumCharacters()) throw "Wrong ID";
+    return characters[id].getName();
+}
+sf::Vector2i DungeonLevel::getPosition(int id) const
+{
+    if (id >= getNumCharacters()) throw "Wrong ID";
+    return actors.at(id).getPosition();
+}
+int DungeonLevel::getMaxHP(int id) const
+{
+    if (id >= getNumCharacters()) throw "Wrong ID";
+    return characters[id].getMaxHP();
+}
+int DungeonLevel::getHP(int id) const
+{
+    if (id >= getNumCharacters()) throw "Wrong ID";
+    return characters[id].getHP();
+}
+int DungeonLevel::getAttack(int id) const
+{
+    if (id >= getNumCharacters()) throw "Wrong ID";
+    return characters[id].getAttack();
+}
+int DungeonLevel::getDefense(int id) const
+{
+    if (id >= getNumCharacters()) throw "Wrong ID";
+    return characters[id].getDefense();
+}
+
+sf::Vector2i DungeonLevel::getPosition(const std::string& name) const
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    return actors.at(pos).getPosition();
+}
+int DungeonLevel::getMaxHP(const std::string& name) const
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    return characters[pos].getMaxHP();
+}
+int DungeonLevel::getHP(const std::string& name) const
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    return characters[pos].getHP();
+}
+int DungeonLevel::getAttack(const std::string& name) const
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    return characters[pos].getAttack();
+}
+int DungeonLevel::getDefense(const std::string& name) const
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    return characters[pos].getDefense();
+}
+
+int DungeonLevel::getMapHeight() const { return tilemap.getHeight(); }
+int DungeonLevel::getMapWidth() const { return tilemap.getWidth(); }
+bool DungeonLevel::outOfBounds(int x, int y) const { return tilemap.outOfBounds(x, y); }
+bool DungeonLevel::outOfBounds(const sf::Vector2i& pos) const { return tilemap.outOfBounds(pos); }
+Tile DungeonLevel::getTile(int x, int y) const { return tilemap.getTile(x, y); }
+Tile DungeonLevel::getTile(const sf::Vector2i& pos) const { return tilemap.getTile(pos); }
+void DungeonLevel::getView(matrix<Tile>& view, const sf::IntRect& bounds) const { tilemap.copyMap(view, bounds); }
+
+void DungeonLevel::setMapSize(int x, int y) { tilemap = Tilemap(x, y); }
+void DungeonLevel::setMapSize(const sf::Vector2i& s) { tilemap = Tilemap(s.x, s.y); }
+void DungeonLevel::setTile(int x, int y, Tile value) { tilemap.setTile(x, y, value); }
+void DungeonLevel::setTile(const sf::Vector2i& pos, Tile value) { tilemap.setTile(pos, value); }
+
+void DungeonLevel::setPosition(const std::string& name, int x, int y)
+{
+    if (tilemap.outOfBounds(x, y)) throw "Position out of bounds";
+    Tile tile = tilemap.getTile(x, y);
+    if (tile != WALK) throw "Invalid position";
+    if (not freePosition(x, y)) throw "Position already ocupied";
+
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    actors[pos].setPosition(x, y);
+}
+void DungeonLevel::setPosition(const std::string& name, const sf::Vector2i& pos)
+{
+    if (tilemap.outOfBounds(pos)) throw "Position out of bounds";
+    Tile tile = tilemap.getTile(pos);
+    if (tile != WALK) throw "Invalid position";
+    if (not freePosition(pos)) throw "Position already ocupied";
+
+    int p = find(name);
+    if (p == -1) throw "Character does not exist";
+
+    actors[p].setPosition(pos);
+}
+void DungeonLevel::move(const std::string& name, int x, int y)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    sf::Vector2i newpos = actors[pos].getPosition() + sf::Vector2i(x, y);
+    if (tilemap.outOfBounds(newpos)) throw "Position out of bounds";
+    Tile tile = tilemap.getTile(newpos);
+    if (tile != WALK) throw "Invalid position";
+    if (not freePosition(newpos)) throw "Position already ocupied";
+
+    actors[pos].move(x, y);
+}
+void DungeonLevel::move(const std::string& name, const sf::Vector2i& v)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    sf::Vector2i newpos = actors[pos].getPosition() + v;
+    if (tilemap.outOfBounds(newpos)) throw "Position out of bounds";
+    Tile tile = tilemap.getTile(newpos);
+    if (tile != WALK) throw "Invalid position";
+    if (not freePosition(newpos)) throw "Position already ocupied";
+
+    actors[pos].move(v);
+}
+void DungeonLevel::move(int id, int x, int y)
+{
+    if (id >= getNumCharacters()) throw "Wrong ID";
+
+    sf::Vector2i newpos = actors[id].getPosition() + sf::Vector2i(x, y);
+    if (tilemap.outOfBounds(newpos)) throw "Position out of bounds";
+    Tile tile = tilemap.getTile(newpos);
+    if (tile != WALK) throw "Invalid position";
+    if (not freePosition(newpos)) throw "Position already ocupied";
+
+    actors[id].move(x, y);
+}
+void DungeonLevel::move(int id, const sf::Vector2i& v)
+{
+    if (id >= getNumCharacters()) throw "Wrong ID";
+
+    sf::Vector2i newpos = actors[id].getPosition() + v;
+    if (tilemap.outOfBounds(newpos)) throw "Position out of bounds";
+    Tile tile = tilemap.getTile(newpos);
+    if (tile != WALK) throw "Invalid position";
+    if (not freePosition(newpos)) throw "Position already ocupied";
+
+    actors[id].move(v);
+}
+
+void DungeonLevel::setMaxHP(const std::string& name, int amount)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].setMaxHP(amount);
+}
+void DungeonLevel::setHP(const std::string& name, int amount)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].setHP(amount);
+}
+void DungeonLevel::setAttack(const std::string& name, int amount)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].setAttack(amount);
+}
+void DungeonLevel::setDefense(const std::string& name, int amount)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].setDefense(amount);
+}
+void DungeonLevel::raiseMaxHP(const std::string& name, int amount)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].raiseMaxHP(amount);
+}
+void DungeonLevel::raiseHP(const std::string& name, int amount)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].raiseHP(amount);
+}
+void DungeonLevel::raiseAttack(const std::string& name, int amount)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].raiseAttack(amount);
+}
+void DungeonLevel::raiseDefense(const std::string& name, int amount)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].raiseDefense(amount);
+}
+void DungeonLevel::fullHeal(const std::string& name)
+{
+    int pos = find(name);
+    if (pos == -1) throw "Character does not exist";
+
+    characters[pos].fullHeal();
+}
+
+int DungeonLevel::find(const std::string& name) const
+{
+    for (int i = 0; i < characters.size(); ++i)
+        if (characters[i].getName() == name) return i;
+
+    return -1;
+}
+bool DungeonLevel::freePosition(int x, int y) const
+{
+    for (int i = 0; i < characters.size(); ++i)
+        if (actors.at(i).getPosition() == sf::Vector2i(x, y))
+            return false;
+
+    return true;
+}
+bool DungeonLevel::freePosition(const sf::Vector2i& p) const
+{
+    for (int i = 0; i < characters.size(); ++i)
+        if (actors.at(i).getPosition() == p)
+            return false;
+
+    return true;
+}
+
+#ifdef DEBUG
+void DungeonLevel::printMap() const
+{
+    std::cout << "################" << std::endl;
+    std::cout << "#Printing map: #" << std::endl;
+    std::cout << "################" << std::endl;
+
+    int height = getMapHeight();
+    int width = getMapWidth();
+    std::cout << "Dimensions: " << width << "x" << height << std::endl;
+
+    for (int i = 0; i < height; ++i)
     {
-    case MOVE:
-        switch(dir)
+        std::cout << std::endl;
+        for (int j = 0; j < width; ++j)
         {
-        case LEFT:
-            if (pos.x <= 0 or tilemap.checkPermission(pos.x-1, pos.y) != WALK)
-                c.setType(IDLE);
-            break;
-        case RIGHT:
-            if (pos.x >= tilemap.getWidth()-1 or tilemap.checkPermission(pos.x+1, pos.y) != WALK)
-                c.setType(IDLE);
-            break;
-        case UP:
-            if (pos.y <= 0 or tilemap.checkPermission(pos.x, pos.y-1) != WALK)
-                c.setType(IDLE);
-            break;
-        case DOWN:
-            if (pos.y >= tilemap.getHeight()-1 or tilemap.checkPermission(pos.x, pos.y+1) != WALK)
-                c.setType(IDLE);
-            break;
-        default:
-            break;
+            Tile tile = tilemap.getTile(j, i);
+            std::cout << tile << " ";
         }
-    default:
-        break;
     }
+
+    std::cout << std::endl << std::endl;
 }
-void DungeonLevel::executeCommand(const Command& c, Character* ch)
+
+void DungeonLevel::printCharacters() const
 {
-    CommandType type = c.getType();
-    CommandDirection dir = c.getDirection();
-    switch (type)
+    std::cout << "#######################" << std::endl;
+    std::cout << "#Printing characters: #" << std::endl;
+    std::cout << "#######################" << std::endl;
+
+    int nchars = getNumCharacters();
+    std::cout << "Total number: " << nchars << std::endl << std::endl;
+
+    for (int i = 0; i < nchars; ++i)
     {
-    case IDLE:
-        break;
-    case MOVE:
-        switch (dir)
-        {
-        case UP:
-            ch->move(0, -1);
-            break;
-        case DOWN:
-            ch->move(0, 1);
-            break;
-        case LEFT:
-            ch->move(-1, 0);
-            break;
-        case RIGHT:
-            ch->move(1, 0);
-            break;
-        default:
-            break;
-        }
-    default:
-        break;
+        sf::Vector2i pos = actors.at(i).getPosition();
+
+        std::cout << "#" << i << ": " << characters[i].getName() << std::endl;
+        std::cout << "@(" << pos.x << "," << pos.y << ")" << std::endl;
+        std::cout << "HP: " << characters[i].getHP() << "/" << characters[i].getMaxHP() << std::endl;
+        std::cout << "Atk: " << characters[i].getAttack() << std::endl;
+        std::cout << "Def: " << characters[i].getDefense() << std::endl;
+        std::cout << std::endl;
     }
+
+    std::cout << std::endl;
 }
-
-void DungeonLevel::turn()
-{
-    Behavior* next = turn_queue.front();
-    turn_queue.pop();
-    if (next != NULL)
-    {
-        int id = next->getID();
-        Character* character = factory.getCharacter(id);
-        sf::Vector2i position = character->getPosition();
-        const int radius = 5;
-        matrix<Tile>& view = next->getView();
-
-        tilemap.getView(view, position.x, position.y, radius);
-
-        Command c = next->getCommand();
-        validateCommand(c, character);
-        executeCommand(c, character);
-
-        turn_queue.push(next);
-    }
-}
-
-int DungeonLevel::getWidth() const { return tilemap.getWidth(); }
-int DungeonLevel::getHeight() const { return tilemap.getHeight(); }
-void DungeonLevel::getTile(int x, int y, Tile& t) const { tilemap.getTile(x, y, t); }
-void DungeonLevel::getAllTiles(matrix<Tile>& t) const { tilemap.getAllTiles(t); }
-
-int DungeonLevel::getNumCharacters() const { return IDs.size(); }
-bool DungeonLevel::existsCharacter(int i) { return factory.existsCharacter(i); }
-void DungeonLevel::getCharacter(int i, Character& c)
-{
-    int n = IDs.size();
-    if (i >= n) return;
-    int index = IDs[i];
-    c = Character(*factory.getCharacter(index));
-}
-
-void DungeonLevel::newCharacter(BehaviorID b)
-{
-    int id = factory.newCharacter();
-    IDs.push_back(id);
-    Behavior* behavior = BehaviorFactory::getBehavior(b, id, factory);
-    turn_queue.push(behavior);
-}
-void DungeonLevel::newCharacter(BehaviorID b, const sf::Vector2i& pos)
-{
-    int id = factory.newCharacter(pos);
-    IDs.push_back(id);
-    Behavior* behavior = BehaviorFactory::getBehavior(b, id, factory);
-    turn_queue.push(behavior);
-}
+#endif
