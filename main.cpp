@@ -33,7 +33,7 @@ int main()
         }
     }
 
-#ifdef DEBUG
+#if DEBUG
     lvl.printMap();
     lvl.printCharacters();
 #endif

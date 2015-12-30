@@ -74,7 +74,7 @@ public:
     bool freePosition(int x, int y) const;
     bool freePosition(const sf::Vector2i& p) const;
 
-#ifdef DEBUG
+#if DEBUG
     void printMap() const;
     void printCharacters() const;
 #endif

@@ -299,7 +299,7 @@ bool DungeonLevel::freePosition(const sf::Vector2i& p) const
     return true;
 }
 
-#ifdef DEBUG
+#if DEBUG
 void DungeonLevel::printMap() const
 {
     std::cout << "################" << std::endl;

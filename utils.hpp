@@ -29,6 +29,4 @@ const sf::Vector2i RIGHT(1, 0);
 
 enum Tile {NONE, WALL, WALK};
 
-#define DEBUG
-
 #endif // UTILS_HPP
