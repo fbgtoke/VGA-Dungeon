@@ -15,6 +15,11 @@ private:
     sf::Time step = sf::Time::Zero;
     sf::Time current = sf::Time::Zero;
 
+    sf::Font font;
+
+    sf::Vector2i position = sf::Vector2i(0, 0);
+    int lineHeight = 20;
+
     void addCharacter();
 
 public:
@@ -27,6 +32,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates) const final;
 
     void pushText(const std::string& txt);
+    void read(std::istream& in);
     void printText() const;
 
     void flush();
@@ -41,6 +47,15 @@ public:
     void setStep(const sf::Time& s);
     sf::Time getStep() const;
     sf::Time timeToNext() const;
+
+    void setFont(const std::string& name);
+
+    void setPosition(int x, int y);
+    void setPosition(const sf::Vector2i& p);
+    sf::Vector2i getPosition() const;
+
+    void setLineHeight(int height);
+    int getLineHeight() const;
 
 #if DEBUG
     void printLine(int n) const;
