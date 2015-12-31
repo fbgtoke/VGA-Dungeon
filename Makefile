@@ -6,17 +6,19 @@ CC = g++
 CFLAGS = -std=c++11
 SFML = -lsfml-system -lsfml-window -lsfml-graphics -lsfml-audio
 
-FILES = main.cpp dungeonlevel.cpp dungeonview.cpp tilemap.cpp character.cpp behavior.cpp dungeongenerator.cpp actor.cpp turncontroller.cpp textbox.cpp dungeoncontroller.cpp 
+SDIR = .
+ODIR = bin
+OUT = VGADungeon.exe
 
-all: debug release
+_OBJS = main.o dungeonlevel.o dungeonview.o tilemap.o character.o behavior.o dungeongenerator.o actor.o turncontroller.o textbox.o dungeoncontroller.o
 
-debug:
-	$(CC) $(CFLAGS) -DDEBUG -c $(FILES)
-	$(CC) -o debug.exe *.o $(SFML)
+OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
-release:
-	$(CC) $(CFLAGS) -c $(FILES)
-	$(CC) -o VGADungeon.exe *.o $(SFML)
+$(ODIR)/%.o: $(SDIR)/%.cpp
+	$(CC) $(CFLAGS) -c -o $@ $< $(CFLAGS)
+
+$(OUT): $(OBJS)
+	$(CC) -o $(OUT) $^ $(SFML)
 
 clean:
-	rm -rf *.o *.exe
+	rm -rf $(ODIR)/*.o $(OUT)
