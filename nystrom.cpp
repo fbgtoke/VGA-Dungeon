@@ -14,7 +14,7 @@ void Nystrom::placeRooms()
 
         if (roomFits(r))
         {
-            placeRoom(r);
+            placeRoom(r, nregions++);
             attempts = 0;
         }
         else
@@ -29,15 +29,57 @@ void Nystrom::createPassages()
     {
         for (int j = 1; j < width-1; j += 2)
         {
-            if (map[i][j] == WALL and adjacentTiles(j, i) == 0)
+            if (map[i][j] == -1 and adjacentTiles(j, i, nregions) == 0)
             {
-                map[i][j] = WALK;
-                bfs(j, i);
+                map[i][j] = nregions;
+                bfs(j, i, nregions);
+                ++nregions;
             }
         }
     }
 }
-void Nystrom::connectRooms() {}
+void Nystrom::connectRooms()
+{
+    std::list<sf::Vector2i> connections;
+    for (int i = 1; i < height-1; i +=2)
+    {
+        for (int j = 1; j < width-1; j += 2)
+        {
+            int value = map[i][j];
+            if (value == -1)
+            {
+                sf::Vector2i center(j, i);
+                sf::Vector2i left = center + LEFT;
+                sf::Vector2i right = center + RIGHT;
+                sf::Vector2i top = center + UP;
+                sf::Vector2i borrom = center + DOWN;
+                if (
+                    (not outOfBounds(left.x, left.y) and not outOfBounds(right.x, right.y)
+                    and map[left.y][left.x] != map[right.y][right.x]) or
+                    (not outOfBounds(top.x, top.y) and not outOfBounds(bottom.x, bottom.y)
+                    and map[top.y][top.x] != map[bottom.y][bottom.x])
+                    )
+                {
+                    connections.push_back(center);
+                }
+            }
+        }
+    }
+
+    std::random_shuffle(connections.start(), connections.end());
+
+    for (sf::Vector2i& c : connections)
+    {
+        int value = -1;
+        for (int k = 0; k < 4; ++k)
+        {
+            int nx = c.x + dirs[k].x;
+            int ny = c.y + dirs[k].y;
+            if (map[ny][nx] > value)
+                value = map[ny][nx];
+        }
+    }
+}
 void Nystrom::uncarve() {}
 
 bool Nystrom::roomFits(const Room& r)
@@ -53,11 +95,11 @@ bool Nystrom::roomFits(const Room& r)
 
     return true;
 }
-void Nystrom::placeRoom(const Room& r)
+void Nystrom::placeRoom(const Room& r, int value)
 {
     for (int i = r.top; i < r.top+r.height; ++i)
         for (int j = r.left; j < r.left+r.width; ++j)
-            map[i][j] = WALK;
+            map[i][j] = value;
 
     rooms.push_back(r);
 }
@@ -97,15 +139,8 @@ void Nystrom::shuffle(sf::Vector2i* d) const
         d[i] = d[index];
         d[index] = aux;
     }
-
-    std::cerr << "V: "
-              << "(" << d[0].x << "," << d[0].y << ") "
-              << "(" << d[1].x << "," << d[1].y << ") "
-              << "(" << d[2].x << "," << d[2].y << ") "
-              << "(" << d[3].x << "," << d[3].y << ")"
-              << std::endl;
 }
-int Nystrom::adjacentTiles(int x, int y) const
+int Nystrom::adjacentTiles(int x, int y, int value) const
 {
     static sf::Vector2i d[] = { UP, DOWN, LEFT, RIGHT };
 
@@ -114,12 +149,12 @@ int Nystrom::adjacentTiles(int x, int y) const
     {
         int nx = x + d[i].x;
         int ny = y + d[i].y;
-        if (not outOfBounds(nx, ny) and map[ny][nx] == WALK)
+        if (not outOfBounds(nx, ny) and map[ny][nx] == value)
             ++count;
     }
     return count;
 }
-void Nystrom::bfs(int x, int y)
+void Nystrom::bfs(int x, int y, int value)
 {
     std::cerr << "Starting bfs: (" << x << "," << y << ")" << std::endl;
 
@@ -140,11 +175,11 @@ void Nystrom::bfs(int x, int y)
             int nx2 = nx + dirs[k].x;
             int ny2 = ny + dirs[k].y;
 
-            if (boundary.contains(nx2, ny2) and map[ny2][nx2] == WALL
-                and adjacentTiles(nx, ny) == 1)
+            if (boundary.contains(nx2, ny2) and map[ny2][nx2] != value
+                and adjacentTiles(nx, ny, -1) == 3)
             {
-                map[ny][nx] = WALK;
-                map[ny2][nx2] = WALK;
+                map[ny][nx] = value;
+                map[ny2][nx2] = value;
                 q.push(sf::Vector2i(nx2, ny2));
             }
         }
@@ -158,8 +193,9 @@ Nystrom::~Nystrom() {}
 
 void Nystrom::create()
 {
-    map = matrix<Tile> (height, std::vector<Tile>(width, WALL));
+    map = matrix<int> (height, std::vector<int>(width, -1));
     rooms.clear();
+    nregions = 0;
 
     placeRooms();
     createPassages();
@@ -206,11 +242,11 @@ void Nystrom::printMap()
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
-            std::cout << map[i][j];
+            std::cout << ((unsigned int) map[i][j])%10 << " ";
         std::cout << std::endl;
     }
 }
-Tile Nystrom::getTile(int x, int y) const
+int Nystrom::getTile(int x, int y) const
 {
     return map[y][x];
 }

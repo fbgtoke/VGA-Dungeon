@@ -28,7 +28,7 @@ int main()
             }
         }
 
-        window.clear(sf::Color::Black);
+        window.clear(sf::Color::Red);
         sf::RectangleShape shape;
         shape.setSize(sf::Vector2f(8, 8));
         for (int i = 0; i < height; ++i)
@@ -36,22 +36,9 @@ int main()
             for (int j = 0; j < width; ++j)
             {
                 shape.setPosition(j*8, i*8);
-                Tile tile = generator.getTile(j, i);
-                switch (tile)
-                {
-                case NONE:
-                    shape.setFillColor(sf::Color::Black);
-                    break;
-                case WALL:
-                    shape.setFillColor(sf::Color::Red);
-                    break;
-                case WALK:
-                    shape.setFillColor(sf::Color::White);
-                    break;
-                default:
-                    shape.setFillColor(sf::Color::Magenta);
-                    break;
-                }
+                int tile = generator.getTile(j, i);
+                if (tile == -1) shape.setFillColor(sf::Color::Black);
+                else shape.setFillColor(sf::Color::White);
                 window.draw(shape);
             }
         }

@@ -7,7 +7,8 @@
 class Nystrom //: public DungeonGenerator
 {
 private:
-    matrix<Tile> map;
+    matrix<int> map;
+    int nregions;
 
     int width, height;
 
@@ -26,13 +27,13 @@ private:
     void uncarve();
 
     bool roomFits(const Room& r);
-    void placeRoom(const Room& r);
+    void placeRoom(const Room& r, int value);
     static bool intersects(const Room& r1, const Room& r2);
     static bool contains(const Room& r1, const Room& r2);
     bool outOfBounds(int x, int y) const;
     void shuffle(sf::Vector2i* d) const;
-    int adjacentTiles(int x, int y) const;
-    void bfs(int x, int y);
+    int adjacentTiles(int x, int y, int value) const;
+    void bfs(int x, int y, int value);
 
 public:
      Nystrom();
@@ -47,7 +48,7 @@ public:
     int setPlaceAttempts(int attempts);
 
     void printMap();
-    Tile getTile(int x, int y) const;
+    int getTile(int x, int y) const;
 };
 
 #endif // NYSTROM_HPP
