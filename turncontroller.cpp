@@ -1,14 +1,6 @@
 #include "turncontroller.hpp"
 
-TurnController::TurnController(DungeonLevel& lvl) : level(lvl)
-{
-    int nchars = level.getNumCharacters();
-    for (int i = 0; i < nchars; ++i)
-    {
-        Behavior* b = new Behavior(i, level);
-        turn_queue.push(b);
-    }
-}
+TurnController::TurnController(DungeonLevel& lvl) : level(lvl) {}
 
 TurnController::~TurnController()
 {
@@ -17,6 +9,16 @@ TurnController::~TurnController()
         Behavior* b = turn_queue.front();
         turn_queue.pop();
         delete b;
+    }
+}
+
+void TurnController::loadBehaviors()
+{
+    int nchars = level.getNumCharacters();
+    for (int i = 0; i < nchars; ++i)
+    {
+        Behavior* b = new Behavior(i, level);
+        turn_queue.push(b);
     }
 }
 

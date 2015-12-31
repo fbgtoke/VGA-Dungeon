@@ -1,24 +1,22 @@
 #include "utils.hpp"
-#include "dungeonlevel.hpp"
-#include "dungeonview.hpp"
-#include "dungeongenerator.hpp"
-#include "turncontroller.hpp"
+#include "dungeoncontroller.hpp"
 
 int main()
 {
-    DungeonLevel lvl;
-    DungeonView view(lvl);
-    DungeonGenerator gen(lvl);
-    gen.create();
-    TurnController turn(lvl);
+    DungeonController controller;
+    controller.create();
 
     sf::RenderWindow window(sf::VideoMode(window_width, window_height), app_name);
+    sf::Clock clk;
     while (window.isOpen())
     {
-        view.update(sf::Time::Zero);
+        try {
+
+        sf::Time deltatime = clk.restart();
+        controller.update(deltatime);
 
         window.clear(sf::Color::Black);
-        window.draw(view);
+        window.draw(controller);
         window.display();
 
         sf::Event event;
@@ -28,13 +26,9 @@ int main()
                 (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Escape))
                 window.close();
 
-            if (event.type == sf::Event::KeyPressed and event.key.code == sf::Keyboard::Return)
-                turn.turn();
+            controller.event(event);
         }
-    }
 
-#if DEBUG
-    lvl.printMap();
-    lvl.printCharacters();
-#endif
+        } catch (const char* e) { std::cout << e << std::endl; }
+    }
 }

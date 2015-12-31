@@ -58,32 +58,32 @@ int DungeonLevel::getNumCharacters() const { return characters.size(); }
 
 std::string DungeonLevel::getName(int id) const
 {
-    if (id >= getNumCharacters()) throw "Wrong ID";
+    if (id >= getNumCharacters()) throw "Wrong ID trying to get name";
     return characters[id].getName();
 }
 sf::Vector2i DungeonLevel::getPosition(int id) const
 {
-    if (id >= getNumCharacters()) throw "Wrong ID";
+    if (id >= getNumCharacters()) throw "Wrong ID trying to get position";
     return actors.at(id).getPosition();
 }
 int DungeonLevel::getMaxHP(int id) const
 {
-    if (id >= getNumCharacters()) throw "Wrong ID";
+    if (id >= getNumCharacters()) throw "Wrong ID trying to get maxhp";
     return characters[id].getMaxHP();
 }
 int DungeonLevel::getHP(int id) const
 {
-    if (id >= getNumCharacters()) throw "Wrong ID";
+    if (id >= getNumCharacters()) throw "Wrong ID trying to get hp";
     return characters[id].getHP();
 }
 int DungeonLevel::getAttack(int id) const
 {
-    if (id >= getNumCharacters()) throw "Wrong ID";
+    if (id >= getNumCharacters()) throw "Wrong ID trying to get attack";
     return characters[id].getAttack();
 }
 int DungeonLevel::getDefense(int id) const
 {
-    if (id >= getNumCharacters()) throw "Wrong ID";
+    if (id >= getNumCharacters()) throw "Wrong ID trying to get defense";
     return characters[id].getDefense();
 }
 

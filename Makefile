@@ -6,7 +6,7 @@ CC = g++
 CFLAGS = -std=c++11
 SFML = -lsfml-system -lsfml-window -lsfml-graphics -lsfml-audio
 
-FILES = main.cpp dungeonlevel.cpp dungeonview.cpp tilemap.cpp character.cpp behavior.cpp dungeongenerator.cpp actor.cpp turncontroller.cpp textbox.cpp 
+FILES = main.cpp dungeonlevel.cpp dungeonview.cpp tilemap.cpp character.cpp behavior.cpp dungeongenerator.cpp actor.cpp turncontroller.cpp textbox.cpp dungeoncontroller.cpp 
 
 all: debug release
 

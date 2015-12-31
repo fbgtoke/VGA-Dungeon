@@ -18,6 +18,8 @@ public:
     TurnController(DungeonLevel& lvl);
     ~TurnController();
 
+    void loadBehaviors();
+
     void turn();
 };
 
