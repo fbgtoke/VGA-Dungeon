@@ -18,6 +18,7 @@ private:
 
     typedef sf::IntRect Room;
     std::vector<Room> rooms;
+    Room boundary;
 
     void placeRooms();
     void createPassages();
@@ -31,6 +32,7 @@ private:
     bool outOfBounds(int x, int y) const;
     void shuffle(sf::Vector2i* d) const;
     int adjacentTiles(int x, int y) const;
+    void bfs(int x, int y);
 
 public:
      Nystrom();
