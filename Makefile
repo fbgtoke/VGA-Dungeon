@@ -10,7 +10,7 @@ SDIR = .
 ODIR = bin
 OUT = VGADungeon.exe
 
-_OBJS = main.o dungeonlevel.o dungeonview.o tilemap.o character.o behavior.o dungeongenerator.o actor.o turncontroller.o textbox.o dungeoncontroller.o
+_OBJS = dungeonlevel.o dungeonview.o tilemap.o character.o behavior.o dungeongenerator.o actor.o turncontroller.o textbox.o dungeoncontroller.o nystrom.o main.o
 
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
@@ -21,4 +21,4 @@ $(OUT): $(OBJS)
 	$(CC) -o $(OUT) $^ $(SFML)
 
 clean:
-	rm -rf $(ODIR)/*.o $(OUT)
+	rm -rf $(ODIR)/*.o $(OUT) *.exe
