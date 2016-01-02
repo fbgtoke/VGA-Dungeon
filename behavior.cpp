@@ -3,6 +3,8 @@
 Behavior::Behavior(int id, const DungeonLevel& lvl) : ID(id), level(lvl) {}
 Behavior::~Behavior() {}
 
+void Behavior::event(const sf::Event& event) {}
+
 int Behavior::getID() const { return ID; }
 std::string Behavior::getName() const { return level.getName(ID); }
 int Behavior::getMaxHP() const { return level.getMaxHP(ID); }

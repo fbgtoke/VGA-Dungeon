@@ -19,21 +19,22 @@ void DungeonController::create()
     generator.create();
 
     bool placed = false;
+    Behavior* b = new Player(0, level);
     while (not placed)
     {
         try {
-            level.newCharacter("Test", rand()%w, rand()%h);
+            turn.newCharacter("Test", rand()%w, rand()%h, b);
             placed = true;
         }
         catch (...) {}
     }
-    turn.loadBehaviors();
 }
 
 void DungeonController::event(const sf::Event& event)
 {
-    if (event.type == sf::Event::KeyPressed
-        and event.key.code == sf::Keyboard::Return)
+    turn.event(event);
+
+    if (event.type == sf::Event::KeyPressed)
     {
         turn.turn();
     }

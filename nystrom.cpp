@@ -299,21 +299,14 @@ Nystrom::~Nystrom() {}
 
 void Nystrom::create()
 {
-    std::cerr << "constructing matrix" << std::endl;
     map = matrix<int> (height, std::vector<int>(width, -1));
-    std::cerr << "erasing previous rroms" << std::endl;
     rooms.clear();
     nregions = 0;
 
-    std::cerr << "placing rooms" << std::endl;
     placeRooms();
-    std::cerr << "creating passages" << std::endl;
     createPassages();
-    std::cerr << "connecting" << std::endl;
     connectRooms();
-    std::cerr << "uncarving" << std::endl;
     uncarve();
-    std::cerr << "applying" << std::endl;
     apply();
 }
 

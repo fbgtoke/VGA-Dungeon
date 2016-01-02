@@ -7,19 +7,23 @@ TurnController::~TurnController()
     while (not turn_queue.empty())
     {
         Behavior* b = turn_queue.front();
-        turn_queue.pop();
+        turn_queue.pop_front();
         delete b;
     }
 }
 
-void TurnController::loadBehaviors()
+void TurnController::event(const sf::Event& event)
 {
-    int nchars = level.getNumCharacters();
-    for (int i = 0; i < nchars; ++i)
-    {
-        Behavior* b = new Behavior(i, level);
-        turn_queue.push(b);
-    }
+    for (Behavior* b : turn_queue)
+        b->event(event);
+}
+
+void TurnController::newCharacter(const std::string &name, int x, int y, Behavior *b)
+{
+    if (b == NULL) throw "Behavior is NULL";
+
+    level.newCharacter(name, x, y);
+    turn_queue.push_back(b);
 }
 
 void TurnController::turn()
@@ -27,7 +31,7 @@ void TurnController::turn()
     if (not turn_queue.empty())
     {
         Behavior* next = turn_queue.front();
-        turn_queue.pop();
+        turn_queue.pop_front();
 
         int id = next->getID();
         auto view = next->getView();
@@ -42,7 +46,7 @@ void TurnController::turn()
         validateCommand(next, c);
         executeCommand(next, c);
 
-        turn_queue.push(next);
+        turn_queue.push_back(next);
     }
 }
 

@@ -18,6 +18,8 @@ public:
     Behavior(int id, const DungeonLevel& lvl);
     ~Behavior();
 
+    virtual void event(const sf::Event& event);
+
     int getID() const;
     std::string getName() const;
     int getMaxHP() const;

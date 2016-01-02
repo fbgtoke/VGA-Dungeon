@@ -7,6 +7,7 @@
 #include "turncontroller.hpp"
 #include "dungeongenerator.hpp"
 #include "nystrom.hpp"
+#include "player.hpp"
 
 class DungeonController : public sf::Drawable
 {
