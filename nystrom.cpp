@@ -40,48 +40,84 @@ void Nystrom::createPassages()
 }
 void Nystrom::connectRooms()
 {
-    std::list<sf::Vector2i> connections;
-    for (int i = 1; i < height-1; i +=2)
-    {
-        for (int j = 1; j < width-1; j += 2)
-        {
-            int value = map[i][j];
-            if (value == -1)
-            {
-                sf::Vector2i center(j, i);
-                sf::Vector2i left = center + LEFT;
-                sf::Vector2i right = center + RIGHT;
-                sf::Vector2i top = center + UP;
-                sf::Vector2i borrom = center + DOWN;
-                if (
-                    (not outOfBounds(left.x, left.y) and not outOfBounds(right.x, right.y)
-                    and map[left.y][left.x] != map[right.y][right.x]) or
-                    (not outOfBounds(top.x, top.y) and not outOfBounds(bottom.x, bottom.y)
-                    and map[top.y][top.x] != map[bottom.y][bottom.x])
-                    )
-                {
-                    connections.push_back(center);
-                }
-            }
-        }
-    }
+    findConnections();
+    std::random_shuffle(connections.begin(), connections.end());
 
-    std::random_shuffle(connections.start(), connections.end());
-
-    for (sf::Vector2i& c : connections)
+    std::vector<Connection>::iterator it;
+    for (it = connections.begin(); it != connections.end(); ++it)
     {
+        int x = it->x;
+        int y = it->y;
+
         int value = -1;
         for (int k = 0; k < 4; ++k)
         {
-            int nx = c.x + dirs[k].x;
-            int ny = c.y + dirs[k].y;
-            if (map[ny][nx] > value)
-                value = map[ny][nx];
+            int nx = x + dirs[k].x;
+            int ny = y + dirs[k].y;
+            if (boundary.contains(nx, ny))
+                value = max(value, map[ny][nx]);
+        }
+        if (value != -1)
+        {
+            flood(x, y, value);
+            eraseRedundantConnections(it);
         }
     }
 }
-void Nystrom::uncarve() {}
+void Nystrom::uncarve()
+{
+    for (int i = 1; i < height; ++i)
+    {
+        for (int j = 1; j < width; ++j)
+        {
+            if (isDeadEnd(j, i))
+                killDeadEnd(j, i);
+        }
+    }
+}
+void Nystrom::apply()
+{
+    level.setMapSize(width, height);
+    for (int i = 0; i < height; ++i)
+    {
+        for (int j = 0; j < width; ++j)
+        {
+            Tile value = (map[i][j] == -1 ? WALL : WALK);
+            level.setTile(j, i, value);
+        }
+    }
+}
 
+bool Nystrom::outOfBounds(int x, int y) const
+{
+    return (
+        x < 0 or x >= width or
+        y < 0 or y >= height
+    );
+}
+inline bool Nystrom::outOfBounds(const sf::Vector2i& p) const
+{
+    return outOfBounds(p.x, p.y);
+}
+
+bool Nystrom::intersects(const Room& r1, const Room& r2)
+{
+    return (
+        r1.left < r2.left+r2.width and
+        r1.left+r1.width > r2.left and
+        r1.top < r2.top+r2.height and
+        r1.top+r1.height > r2.top
+    );
+}
+bool Nystrom::contains(const Room& r1, const Room& r2)
+{
+    return (
+        r1.left < r2.left and
+        r1.left+r1.width > r2.left+r2.width and
+        r1.top < r2.top and
+        r1.top+r1.height > r2.top+r2.height
+    );
+}
 bool Nystrom::roomFits(const Room& r)
 {
     if (not contains(Room(1, 1, width-2, height-2), r))
@@ -104,42 +140,75 @@ void Nystrom::placeRoom(const Room& r, int value)
     rooms.push_back(r);
 }
 
-bool Nystrom::intersects(const Room& r1, const Room& r2)
+inline bool Nystrom::horizontalConnection(const sf::Vector2i left, const sf::Vector2i& right) const
 {
     return (
-        r1.left < r2.left+r2.width and
-        r1.left+r1.width > r2.left and
-        r1.top < r2.top+r2.height and
-        r1.top+r1.height > r2.top
-    );
+        boundary.contains(left) and boundary.contains(right)
+        and map[left.y][left.x] != -1 and map[right.y][right.x] != -1
+        and map[left.y][left.x] != map[right.y][right.x]
+        );
 }
-bool Nystrom::contains(const Room& r1, const Room& r2)
+inline bool Nystrom::verticalConnection(const sf::Vector2i& top, const sf::Vector2i& bottom) const
 {
     return (
-        r1.left < r2.left and
-        r1.left+r1.width > r2.left+r2.width and
-        r1.top < r2.top and
-        r1.top+r1.height > r2.top+r2.height
-    );
+        boundary.contains(top) and boundary.contains(bottom)
+        and map[top.y][top.x] != -1 and map[bottom.y][bottom.x] != -1
+        and map[top.y][top.x] != map[bottom.y][bottom.x]
+        );
 }
-bool Nystrom::outOfBounds(int x, int y) const
+bool Nystrom::isConnection(int x, int y)
 {
-    return (
-        x < 0 or x >= width or
-        y < 0 or y >= height
-    );
-}
-void Nystrom::shuffle(sf::Vector2i* d) const
-{
-    for (int i = 3; i > 0; --i)
-    {
-        int index = rand()%(i+1);
+    if (not boundary.contains(x, y) or map[y][x] != -1) return false;
+    sf::Vector2i center(x, y);
+    sf::Vector2i left = center + LEFT;
+    sf::Vector2i right = center + RIGHT;
+    sf::Vector2i top = center + UP;
+    sf::Vector2i bottom = center + DOWN;
 
-        sf::Vector2i aux = d[i];
-        d[i] = d[index];
-        d[index] = aux;
+    bool h = horizontalConnection(left, right);
+    bool v = verticalConnection(top, bottom);
+    return (h != v);
+}
+void Nystrom::findConnections()
+{
+    connections.clear();
+    for (int i = 1; i < height-1; ++i)
+    {
+        for (int j = 1; j < width-1; ++j)
+        {
+            if (isConnection(j, i))
+                connections.push_back(Connection(j, i));
+        }
     }
 }
+void Nystrom::eraseRedundantConnections(std::vector<Connection>::iterator start)
+{
+    std::vector<Connection>::iterator it = start+1;
+    while (it != connections.end())
+    {
+        if (not isConnection(it->x, it->y)) it = connections.erase(it);
+        else ++it;
+    }
+}
+void Nystrom::flood(int x, int y, int value)
+{
+    if (not outOfBounds(x, y))
+    {
+        map[y][x] = value;
+        for (sf::Vector2i& d : dirs)
+        {
+            int nx = x + d.x;
+            int ny = y + d.y;
+            if (boundary.contains(nx, ny))
+            {
+                int v = map[ny][nx];
+                if (v != -1 and v != value)
+                    flood(nx, ny, value);
+            }
+        }
+    }
+}
+
 int Nystrom::adjacentTiles(int x, int y, int value) const
 {
     static sf::Vector2i d[] = { UP, DOWN, LEFT, RIGHT };
@@ -156,18 +225,16 @@ int Nystrom::adjacentTiles(int x, int y, int value) const
 }
 void Nystrom::bfs(int x, int y, int value)
 {
-    std::cerr << "Starting bfs: (" << x << "," << y << ")" << std::endl;
-
     std::queue<sf::Vector2i> q;
     q.push(sf::Vector2i(x, y));
 
-    sf::Vector2i dirs[] = {UP, DOWN, LEFT, RIGHT};
+    std::random_shuffle(dirs.begin(), dirs.end());
     while (not q.empty())
     {
         sf::Vector2i pos = q.front();
         q.pop();
 
-        shuffle(dirs);
+        std::random_shuffle(dirs.begin(), dirs.end());
         for (int k = 0; k < 4; ++k)
         {
             int nx = pos.x + dirs[k].x;
@@ -184,25 +251,70 @@ void Nystrom::bfs(int x, int y, int value)
             }
         }
     }
-    std::cerr << "Done bfs" << std::endl;
 }
 
-Nystrom::Nystrom() {}
-//Nystrom::Nystrom(DungeonLevel& lvl) : DungeonGenerator(lvl) {}
+bool Nystrom::isDeadEnd(int x, int y) const
+{
+    if (not boundary.contains(x, y) or map[y][x] == -1) return false;
+    sf::Vector2i p(x, y);
+
+    int value = map[y][x];
+    int count = 0;
+    for (int k = 0; k < 4; ++k)
+    {
+        sf::Vector2i pos = p + dirs[k];
+        int newvalue = map[pos.y][pos.x];
+        if (boundary.contains(p) and newvalue != -1)
+            ++count;
+    }
+    return count == 1;
+}
+void Nystrom::killDeadEnd(int x, int y)
+{
+    map[y][x] = -1;
+    sf::Vector2i start(x, y);
+
+    std::queue<sf::Vector2i> q;
+    q.push(start);
+    while (not q.empty())
+    {
+        sf::Vector2i pos = q.front();
+        q.pop();
+
+        for (int k = 0; k < 4; ++k)
+        {
+            int nx = pos.x + dirs[k].x;
+            int ny = pos.y + dirs[k].y;
+            if (isDeadEnd(nx, ny))
+            {
+                map[ny][nx] = -1;
+                q.push(sf::Vector2i(nx, ny));
+            }
+        }
+    }
+}
+
+Nystrom::Nystrom(DungeonLevel& lvl) : DungeonGenerator(lvl) {}
 Nystrom::~Nystrom() {}
 
 void Nystrom::create()
 {
+    std::cerr << "constructing matrix" << std::endl;
     map = matrix<int> (height, std::vector<int>(width, -1));
+    std::cerr << "erasing previous rroms" << std::endl;
     rooms.clear();
     nregions = 0;
 
+    std::cerr << "placing rooms" << std::endl;
     placeRooms();
+    std::cerr << "creating passages" << std::endl;
     createPassages();
+    std::cerr << "connecting" << std::endl;
     connectRooms();
+    std::cerr << "uncarving" << std::endl;
     uncarve();
-
-    std::cerr << "Done creating" << std::endl;
+    std::cerr << "applying" << std::endl;
+    apply();
 }
 
 void Nystrom::setSize(int w, int h)

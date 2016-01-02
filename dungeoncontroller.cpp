@@ -5,8 +5,28 @@ DungeonController::~DungeonController() {}
 
 void DungeonController::create()
 {
-    DungeonGenerator generator(level);
+    Nystrom generator(level);
+
+    int w, h;
+    int mrooms, Mrooms;
+    int mw, Mw, mh, Mh;
+    int a;
+    std::cin >> w >> h >> mrooms >> Mrooms >> mw >> Mw >> mh >> Mh >> a;
+    generator.setSize(w, h);
+    generator.setNumRooms(mrooms, Mrooms);
+    generator.setRoomSize(mw, Mw, mh, Mh);
+    generator.setPlaceAttempts(a);
     generator.create();
+
+    bool placed = false;
+    while (not placed)
+    {
+        try {
+            level.newCharacter("Test", rand()%w, rand()%h);
+            placed = true;
+        }
+        catch (...) {}
+    }
     turn.loadBehaviors();
 }
 
