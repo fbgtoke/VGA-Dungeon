@@ -19,15 +19,16 @@ void DungeonController::create()
     generator.create();
 
     bool placed = false;
-    Behavior* b = new Player(0, level);
     while (not placed)
     {
         try {
-            turn.newCharacter("Test", rand()%w, rand()%h, b);
+            level.newCharacter("Test", rand()%w, rand()%h);
             placed = true;
         }
         catch (...) {}
     }
+    turn.newCharacter(new Player(0, level));
+    view.newCharacter(0, "spritesheet.png");
 
     view.setTileSheet("tilesheet.png");
     view.setTileSize(16);

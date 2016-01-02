@@ -18,11 +18,10 @@ void TurnController::event(const sf::Event& event)
         b->event(event);
 }
 
-void TurnController::newCharacter(const std::string &name, int x, int y, Behavior *b)
+void TurnController::newCharacter(Behavior *b)
 {
     if (b == NULL) throw "Behavior is NULL";
 
-    level.newCharacter(name, x, y);
     turn_queue.push_back(b);
 }
 

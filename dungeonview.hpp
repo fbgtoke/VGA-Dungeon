@@ -4,7 +4,7 @@
 #include "utils.hpp"
 #include "dungeonlevel.hpp"
 
-#include "tilemapview.hpp"
+#include "animatedsprite.hpp"
 
 class DungeonView : public sf::Drawable
 {
@@ -19,8 +19,11 @@ private:
     sf::View levelView;
     sf::View minimapView;
 
+    sf::Texture spriteSheet;
+    std::map<int, AnimatedSprite> sprites;
+
     void drawTilemap(sf::RenderTarget& target, const sf::Texture& texture, int width, int height) const;
-    void drawCharacters(sf::RenderTarget& target, sf::RenderStates states) const;
+    void drawCharacters(sf::RenderTarget& target) const;
 
 public:
     DungeonView(const DungeonLevel& lvl);
@@ -31,8 +34,9 @@ public:
 
     void setTileSize(int size);
     int getTileSize() const;
-
     void setTileSheet(const std::string& name);
+
+    void newCharacter(int i, const std::string& spritesheet);
 };
 
 #endif // DUNGEONVIEW_HPP

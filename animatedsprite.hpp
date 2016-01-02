@@ -20,7 +20,7 @@ public:
     AnimatedSprite();
     AnimatedSprite(const sf::Texture& tex);
 
-    void update(sf::Time& deltatime);
+    void update(const sf::Time& deltatime);
 
     void addFrame(const Frame& rect);
 

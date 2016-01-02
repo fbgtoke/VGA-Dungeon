@@ -20,7 +20,7 @@ public:
 
     void event(const sf::Event& event);
 
-    void newCharacter(const std::string& name, int x, int y, Behavior* b);
+    void newCharacter(Behavior* b);
 
     void turn();
 };

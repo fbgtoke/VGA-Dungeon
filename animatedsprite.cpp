@@ -10,8 +10,10 @@ AnimatedSprite::AnimatedSprite(const sf::Texture& tex) : Sprite(tex)
     setTextureRect(sf::IntRect(0, 0, 0, 0));
 }
 
-void AnimatedSprite::update(sf::Time& deltatime)
+void AnimatedSprite::update(const sf::Time& deltatime)
 {
+    if (frameTime == sf::Time::Zero) pause();
+
     if (playing and frames.size() > 0)
     {
         if (not (not looping and hasEnded()))

@@ -9,6 +9,13 @@ DungeonView::~DungeonView() {}
 
 void DungeonView::update(const sf::Time& deltatime)
 {
+    for (auto& s : sprites)
+    {
+        sf::Vector2i pos = level.getPosition(s.first);
+        s.second.setPosition(pos.x*tileSize, pos.y*tileSize);;
+        s.second.update(deltatime);
+    }
+
     center = level.getPosition(0);
     sf::Vector2i tile_center = center * tileSize;
 
@@ -61,32 +68,20 @@ void DungeonView::drawTilemap(sf::RenderTarget& target, const sf::Texture& textu
         }
     }
 }
-void DungeonView::drawCharacters(sf::RenderTarget& target, sf::RenderStates states) const
+void DungeonView::drawCharacters(sf::RenderTarget& target) const
 {
-    sf::RectangleShape shape;
-    shape.setSize(sf::Vector2f(16, 16));
-    shape.setFillColor(sf::Color::Magenta);
-
-    int n = level.getNumCharacters();
-
-    for (int i = 0; i < n; ++i)
-    {
-        std::string name = level.getName(i);
-        sf::Vector2i pos = level.getPosition(name);
-        shape.setPosition(pos.x*tileSize, pos.y*tileSize);
-
-        target.draw(shape);
-    }
+    for (auto& s : sprites) target.draw(s.second);
 }
 
 void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.setView(levelView);
     drawTilemap(target, tileSheet, 20, 20);
-    drawCharacters(target, states);
+    drawCharacters(target);
 
     target.setView(minimapView);
     drawTilemap(target, minimapTexture, 90, 90);
+    drawCharacters(target);
 
     target.setView(target.getDefaultView());
 }
@@ -103,4 +98,15 @@ void DungeonView::setTileSheet(const std::string& name)
 {
     if (not tileSheet.loadFromFile(resources + name))
         throw "Could not load tile sheet";
+}
+
+void DungeonView::newCharacter(int i, const std::string& spritesheet)
+{
+    if (not spriteSheet.loadFromFile(resources+spritesheet))
+        throw "Could not load character texture";
+
+    sprites[i] = AnimatedSprite(spriteSheet);
+    sprites[i].addFrame(Frame(0, 0, 16, 16));
+    sprites[i].addFrame(Frame(16, 0, 16, 16));
+    sprites[i].start(sf::seconds(0.5f));
 }
