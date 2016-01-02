@@ -4,6 +4,8 @@
 #include "utils.hpp"
 #include "dungeonlevel.hpp"
 
+#include "tilemapview.hpp"
+
 class DungeonView : public sf::Drawable
 {
 private:
@@ -11,11 +13,13 @@ private:
 
     int tileSize = 16;
     sf::Texture tileSheet;
+    sf::Texture minimapTexture;
 
+    sf::Vector2i center;
     sf::View levelView;
-    sf::View GUIView;
+    sf::View minimapView;
 
-    void drawTilemap(sf::RenderTarget& target, sf::RenderStates states) const;
+    void drawTilemap(sf::RenderTarget& target, const sf::Texture& texture, int width, int height) const;
     void drawCharacters(sf::RenderTarget& target, sf::RenderStates states) const;
 
 public:

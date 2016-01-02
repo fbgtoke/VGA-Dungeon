@@ -1,33 +1,46 @@
 #include "dungeonview.hpp"
 
-DungeonView::DungeonView(const DungeonLevel& lvl) : level(lvl) {}
+DungeonView::DungeonView(const DungeonLevel& lvl) : level(lvl)
+{
+    if (not minimapTexture.loadFromFile(resources + "minimapsheet.png"))
+        throw "Could not load minimap texture";
+}
 DungeonView::~DungeonView() {}
 
 void DungeonView::update(const sf::Time& deltatime)
 {
-    sf::Vector2i center = tileSize * level.getPosition(0);
-    levelView.reset(sf::FloatRect(center.x-tileSize*7.5f, center.y-tileSize*7.5f, tileSize*16, tileSize*16));
-    levelView.setCenter(center.x + tileSize/2, center.y + tileSize/2);
+    center = level.getPosition(0);
+    sf::Vector2i tile_center = center * tileSize;
+
+    levelView.reset(sf::FloatRect(tile_center.x-tileSize*7.5f, tile_center.y-tileSize*7.5f, tileSize*16, tileSize*16));
+    levelView.setCenter(tile_center.x + tileSize/2, tile_center.y + tileSize/2);
     levelView.setViewport(sf::FloatRect(0, 0, 1, 1.25f));
     levelView.zoom(1.0f);
 
-//    GUIView.reset(sf::FloatRect(0.75f, 0.0f, 0.25f, 0.25f));
+    minimapView.reset(sf::FloatRect(tile_center.x-tileSize*37.5f, tile_center.y-tileSize*37.5f, tileSize*80, tileSize*80));
+    minimapView.setCenter(tile_center.x + tileSize/2, tile_center.y + tileSize/2);
+    minimapView.setViewport(sf::FloatRect(0.75f, 0.05f, 0.2f, 0.25f));
+    minimapView.zoom(0.5f);
 }
 
-void DungeonView::drawTilemap(sf::RenderTarget& target, sf::RenderStates states) const
+void DungeonView::drawTilemap(sf::RenderTarget& target, const sf::Texture& texture, int width, int height) const
 {
-    sf::Sprite sprite(tileSheet);
+    int left = center.x - width/2;
+    int top = center.y - height/2;
+    sf::IntRect boundary(left, top, width, height);
+    matrix<Tile> view;
+    level.getView(view, boundary);
 
-    int width = level.getMapWidth();
-    int height = level.getMapHeight();
-
+    sf::Sprite sprite(texture);
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
         {
-            sprite.setPosition(j*tileSize, i*tileSize);
+            Tile tile = view[i][j];
+            int x = (j + left) * tileSize;
+            int y = (i + top) * tileSize;
+            sprite.setPosition(x, y);
 
-            Tile tile = level.getTile(j, i);
             switch (tile)
             {
             case NONE:
@@ -52,7 +65,7 @@ void DungeonView::drawCharacters(sf::RenderTarget& target, sf::RenderStates stat
 {
     sf::RectangleShape shape;
     shape.setSize(sf::Vector2f(16, 16));
-    shape.setFillColor(sf::Color::Green);
+    shape.setFillColor(sf::Color::Magenta);
 
     int n = level.getNumCharacters();
 
@@ -68,17 +81,12 @@ void DungeonView::drawCharacters(sf::RenderTarget& target, sf::RenderStates stat
 
 void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    sf::RectangleShape shape;
-
     target.setView(levelView);
-    drawTilemap(target, states);
+    drawTilemap(target, tileSheet, 20, 20);
     drawCharacters(target, states);
 
-    target.setView(GUIView);
-    shape.setSize(sf::Vector2f(1000, 1000));
-    shape.setPosition(0, 0);
-    shape.setFillColor(sf::Color::Green);
-    //target.draw(shape);
+    target.setView(minimapView);
+    drawTilemap(target, minimapTexture, 90, 90);
 
     target.setView(target.getDefaultView());
 }
