@@ -28,6 +28,9 @@ void DungeonController::create()
         }
         catch (...) {}
     }
+
+    view.setTileSheet("tilesheet.png");
+    view.setTileSize(16);
 }
 
 void DungeonController::event(const sf::Event& event)

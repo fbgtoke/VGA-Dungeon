@@ -35,9 +35,9 @@ struct Command
 {
     CommandType type;
     Direction direction;
-    Command() : type(IDLE) {};
+    Command() : type(IDLE) {}
     Command(CommandType t, Direction d) :
-        type(t), direction(d) {};
+        type(t), direction(d) {}
 };
 
 #define min(a, b) ( (a < b) ? a : b)

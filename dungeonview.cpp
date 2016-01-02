@@ -14,14 +14,9 @@ void DungeonView::update(const sf::Time& deltatime)
 //    GUIView.reset(sf::FloatRect(0.75f, 0.0f, 0.25f, 0.25f));
 }
 
-void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void DungeonView::drawTilemap(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    sf::RectangleShape shape;
-
-    target.setView(levelView);
-
-    // Tilemap
-    shape.setSize(sf::Vector2f(16, 16));
+    sf::Sprite sprite(tileSheet);
 
     int width = level.getMapWidth();
     int height = level.getMapHeight();
@@ -30,30 +25,32 @@ void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         for (int j = 0; j < width; ++j)
         {
-            shape.setPosition(j*tileSize, i*tileSize);
+            sprite.setPosition(j*tileSize, i*tileSize);
 
             Tile tile = level.getTile(j, i);
             switch (tile)
             {
             case NONE:
-                shape.setFillColor(sf::Color::Magenta);
+                sprite.setTextureRect(sf::IntRect(0*tileSize, 0, tileSize, tileSize));
                 break;
             case WALL:
-                shape.setFillColor(sf::Color::Red);
+                sprite.setTextureRect(sf::IntRect(1*tileSize, 0, tileSize, tileSize));
                 break;
             case WALK:
-                shape.setFillColor(sf::Color::White);
+                sprite.setTextureRect(sf::IntRect(2*tileSize, 0, tileSize, tileSize));
                 break;
             default:
-                shape.setFillColor(sf::Color::Transparent);
+                sprite.setTextureRect(sf::IntRect(3*tileSize, 0, tileSize, tileSize));
                 break;
             }
 
-            target.draw(shape);
+            target.draw(sprite);
         }
     }
-
-    // Characters
+}
+void DungeonView::drawCharacters(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    sf::RectangleShape shape;
     shape.setSize(sf::Vector2f(16, 16));
     shape.setFillColor(sf::Color::Green);
 
@@ -67,7 +64,15 @@ void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
         target.draw(shape);
     }
+}
 
+void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    sf::RectangleShape shape;
+
+    target.setView(levelView);
+    drawTilemap(target, states);
+    drawCharacters(target, states);
 
     target.setView(GUIView);
     shape.setSize(sf::Vector2f(1000, 1000));
@@ -76,4 +81,18 @@ void DungeonView::draw(sf::RenderTarget& target, sf::RenderStates states) const
     //target.draw(shape);
 
     target.setView(target.getDefaultView());
+}
+
+void DungeonView::setTileSize(int size)
+{
+    assert (size > 0);
+    tileSize = size;
+}
+
+int DungeonView::getTileSize() const { return tileSize; }
+
+void DungeonView::setTileSheet(const std::string& name)
+{
+    if (not tileSheet.loadFromFile(resources + name))
+        throw "Could not load tile sheet";
 }
